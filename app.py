@@ -10,7 +10,22 @@ from functools import wraps
 import router_utils as ru
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 app = Flask(__name__)
-api = Api(app, title="RIP Dashboard", version="1.0", description="Manage RIP Routers")
+
+# Configure Swagger UI with Authorization button
+authorizations = {
+    'apikey': {
+        'type': 'apiKey',
+        'in': 'header',
+        'name': 'Authorization'
+    }
+}
+
+api = Api(app, 
+          title="RIP Dashboard", 
+          version="1.0", 
+          description="Manage RIP Routers. Authorize using the button above with your JWT token.",
+          authorizations=authorizations,
+          security='apikey')
 
 DB_FILE = "routers_db.json"
 SECRET_KEY = "your_secret_key"
@@ -23,12 +38,23 @@ def token_required(f):
         token = request.headers.get("Authorization")
         if not token:
             return {"msg": "Token is missing"}, 401
+            
+        # Handle Bearer prefix if present
+        if token.startswith("Bearer "):
+            token = token.replace("Bearer ", "")
+        
+        # Debug message
+        print(f"Processing token: {token[:10]}...")
+            
         try:
             jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
         except jwt.ExpiredSignatureError:
             return {"msg": "Token has expired"}, 401
         except jwt.InvalidTokenError:
-            return {"msg": "Invalid token"}, 401
+            return {"msg": "Invalid token format or signature"}, 401
+        except Exception as e:
+            return {"msg": f"Authentication error: {str(e)}"}, 401
+            
         return f(*args, **kwargs)
     return decorated
 

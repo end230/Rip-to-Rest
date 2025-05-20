@@ -155,7 +155,7 @@ class Login(Resource):
     def post(self):
         data = request.json
         if data['username'] == 'admin' and data['password'] == 'admin':
-            return {'token': generate_token(data['username'])}, 200
+            return {"token": "your_generated_token"}, 200
         return {'msg': 'Invalid creds'}, 401
 
 @api.route('/routers')

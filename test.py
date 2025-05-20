@@ -1,6 +1,6 @@
 import paramiko
 
-router_ip = "192.168.1.1"  # replace with your router IP
+router_ip = "192.168.1.1"  # The IP of the router
 username = "admin"
 password = "cisco"
 
